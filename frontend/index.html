@@ -1,0 +1,418 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="description" content="High School Student Management System Portal" />
+    <title>Student Management System | Portal</title>
+
+    <!-- Preconnect for performance -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+
+    <!-- Main Stylesheet -->
+    <link rel="stylesheet" href="assets/css/styles.css" />
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎓</text></svg>" />
+</head>
+<body>
+    <div class="login-screen" id="loginScreen">
+        <div class="login-panel">
+            <div class="login-card">
+                <h2>Portal Login</h2>
+                <p>Sign in with your admin, teacher, or student account.</p>
+                <form id="loginForm" class="login-form">
+                    <label class="form-label" for="loginUsername">Username</label>
+                    <input type="text" id="loginUsername" class="text-input" autocomplete="username" required />
+
+                    <label class="form-label" for="loginPassword">Password</label>
+                    <input type="password" id="loginPassword" class="text-input" autocomplete="current-password" required />
+
+                    <button class="btn btn-primary btn-full" type="submit">Sign In</button>
+                    <p class="login-error" id="loginError"></p>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <svg class="logo-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M22 10v6M2 10l10-5 10 5-10 5z" />
+                    <path d="M6 12v5c3 3 9 3 12 0v-5" />
+                </svg>
+                <h1 class="logo-text">SMS Portal</h1>
+            </div>
+            <button class="sidebar-close" id="sidebarClose" aria-label="Close sidebar">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
+
+        <nav class="sidebar-nav">
+            <ul class="nav-list">
+                <li class="nav-item active">
+                    <a href="#dashboard" class="nav-link" data-page="dashboard">
+                        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="3" width="7" height="7" />
+                            <rect x="14" y="3" width="7" height="7" />
+                            <rect x="14" y="14" width="7" height="7" />
+                            <rect x="3" y="14" width="7" height="7" />
+                        </svg>
+                        <span class="nav-text">Dashboard</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#attendance" class="nav-link" data-page="attendance">
+                        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M9 11l3 3L22 4" />
+                            <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11" />
+                        </svg>
+                        <span class="nav-text">Attendance</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#grades" class="nav-link" data-page="grades">
+                        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+                            <path d="M14 2v6h6M16 13H8M16 17H8M10 9H8" />
+                        </svg>
+                        <span class="nav-text">Grades</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#students" class="nav-link" data-page="students">
+                        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" />
+                            <circle cx="9" cy="7" r="4" />
+                            <path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" />
+                        </svg>
+                        <span class="nav-text">Students</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <div class="sidebar-footer">
+            <div class="user-profile">
+                <div class="user-avatar">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" />
+                        <circle cx="12" cy="7" r="4" />
+                    </svg>
+                </div>
+                <div class="user-info">
+                    <p class="user-name" id="sidebarUserName">User</p>
+                    <p class="user-role" id="sidebarUserRole">Portal Access</p>
+                </div>
+            </div>
+            <button class="btn-logout" id="btnLogout" aria-label="Logout">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9" />
+                </svg>
+            </button>
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <header class="top-header">
+            <button class="hamburger" id="hamburgerBtn" aria-label="Toggle sidebar">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+
+            <div class="header-title">
+                <h2 id="pageTitle">Dashboard</h2>
+                <p class="header-subtitle" id="pageSubtitle">Welcome back! Here's what's happening today.</p>
+            </div>
+
+            <div class="header-actions">
+                <button class="btn-icon" aria-label="Notifications">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0" />
+                    </svg>
+                    <span class="badge">3</span>
+                </button>
+            </div>
+        </header>
+
+        <section class="dashboard-section" id="dashboardPage">
+            <div class="stats-grid">
+                <div class="stat-card stat-card-primary">
+                    <div class="stat-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" />
+                            <circle cx="9" cy="7" r="4" />
+                            <path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" />
+                        </svg>
+                    </div>
+                    <div class="stat-content">
+                        <h3 class="stat-value" id="totalStudentsCount">0</h3>
+                        <p class="stat-label">Total Students</p>
+                        <span class="stat-change positive">Based on current roster</span>
+                    </div>
+                </div>
+                <div class="stat-card stat-card-success">
+                    <div class="stat-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+                        </svg>
+                    </div>
+                    <div class="stat-content">
+                        <h3 class="stat-value" id="attendanceRateCount">0%</h3>
+                        <p class="stat-label">Attendance Rate</p>
+                        <span class="stat-change positive">Updated from attendance data</span>
+                    </div>
+                </div>
+                <div class="stat-card stat-card-warning">
+                    <div class="stat-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10" />
+                            <path d="M12 6v6l4 2" />
+                        </svg>
+                    </div>
+                    <div class="stat-content">
+                        <h3 class="stat-value" id="pendingActionsCount">0</h3>
+                        <p class="stat-label">Pending Actions</p>
+                        <span class="stat-change neutral">Students to review</span>
+                    </div>
+                </div>
+                <div class="stat-card stat-card-info">
+                    <div class="stat-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                            <path d="M16 2v4M8 2v4M3 10h18" />
+                        </svg>
+                    </div>
+                    <div class="stat-content">
+                        <h3 class="stat-value" id="classesTodayCount">0</h3>
+                        <p class="stat-label">Classes Today</p>
+                        <span class="stat-change neutral">Your assigned sections</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="quick-actions">
+                <h3 class="section-title">Quick Actions</h3>
+                <div class="action-buttons">
+                    <button class="action-btn" id="quickAttendance" data-role-action="teacher">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M9 11l3 3L22 4" />
+                            <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11" />
+                        </svg>
+                        Mark Attendance
+                    </button>
+                    <button class="action-btn" data-page="grades" id="quickGrades">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+                            <path d="M14 2v6h6M16 13H8M16 17H8M10 9H8" />
+                        </svg>
+                        <span id="quickGradesText">View Grades</span>
+                    </button>
+                    <button class="action-btn" data-page="students" id="quickStudents">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+                        </svg>
+                        <span id="quickStudentsText">Student Records</span>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <section class="page-section" id="attendancePage" style="display: none;">
+            <div class="page-header page-header-row">
+                <div>
+                    <h3 class="section-title">Daily Attendance Marking</h3>
+                    <p class="section-description">Record attendance for your selected class and date.</p>
+                </div>
+                <button class="btn btn-secondary" id="loadAttendance" type="button">Refresh Students</button>
+            </div>
+
+            <div class="attendance-meta">
+                <div class="meta-item">
+                    <label for="attendanceClass">Class:</label>
+                    <select id="attendanceClass" class="select-input"></select>
+                </div>
+                <div class="meta-item">
+                    <label for="attendanceDate">Date:</label>
+                    <input type="date" id="attendanceDate" class="date-input" />
+                </div>
+            </div>
+
+            <div class="attendance-table-container">
+                <table class="attendance-table">
+                    <thead>
+                        <tr>
+                            <th>Roll No.</th>
+                            <th>Student Name</th>
+                            <th class="text-center">Status</th>
+                            <th>Remarks</th>
+                        </tr>
+                    </thead>
+                    <tbody id="attendanceTableBody">
+                        <tr>
+                            <td colspan="4" class="empty-state">Select a class and click Refresh to load your students.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="form-actions">
+                <button class="btn btn-secondary" type="button" id="cancelAttendance">Cancel</button>
+                <button class="btn btn-primary" id="submitAttendance" type="button">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 11l3 3L22 4" />
+                        <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11" />
+                    </svg>
+                    Submit Attendance Records
+                </button>
+            </div>
+        </section>
+
+        <section class="page-section" id="gradesPage" style="display: none;">
+            <div class="page-header page-header-row">
+                <div>
+                    <h3 class="section-title">Student Grades Management</h3>
+                    <p class="section-description">View grade records for any student in your classes.</p>
+                </div>
+                <div class="filter-row">
+                    <label class="filter-label" for="gradeStudentSelect">Choose student:</label>
+                    <select id="gradeStudentSelect" class="select-input"></select>
+                </div>
+            </div>
+
+            <div class="table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Subject</th>
+                            <th>Quiz</th>
+                            <th>Assignment</th>
+                            <th>Exam</th>
+                            <th>Total</th>
+                            <th>%</th>
+                            <th>Grade</th>
+                            <th>Semester</th>
+                            <th>Year</th>
+                        </tr>
+                    </thead>
+                    <tbody id="gradesTableBody">
+                        <tr>
+                            <td colspan="9" class="empty-state">Select a student to view their grades.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section class="page-section" id="studentsPage" style="display: none;">
+            <div class="page-header page-header-row">
+                <div>
+                    <h3 class="section-title">Student Directory</h3>
+                    <p class="section-description">Browse all student records and search by class, name, or roll number.</p>
+                </div>
+                <div class="filter-row">
+                    <input id="studentSearch" type="search" class="search-input" placeholder="Search students by name or roll number" />
+                </div>
+            </div>
+
+            <div class="management-panel" id="adminStudentPanel" style="display: none;">
+                <div class="panel-heading">
+                    <h4>Add Student</h4>
+                    <p>Create a student login and profile in one step.</p>
+                </div>
+                <form class="management-form" id="studentCreateForm">
+                    <div class="form-grid">
+                        <label class="form-field">
+                            <span>Username</span>
+                            <input type="text" class="text-input" id="newStudentUsername" required />
+                        </label>
+                        <label class="form-field">
+                            <span>Password</span>
+                            <input type="password" class="text-input" id="newStudentPassword" placeholder="Default: Student123!" />
+                        </label>
+                        <label class="form-field">
+                            <span>First Name</span>
+                            <input type="text" class="text-input" id="newStudentFirstName" required />
+                        </label>
+                        <label class="form-field">
+                            <span>Last Name</span>
+                            <input type="text" class="text-input" id="newStudentLastName" required />
+                        </label>
+                        <label class="form-field">
+                            <span>Roll Number</span>
+                            <input type="text" class="text-input" id="newStudentRollNumber" required />
+                        </label>
+                        <label class="form-field">
+                            <span>Class</span>
+                            <select class="select-input" id="newStudentClass" required></select>
+                        </label>
+                        <label class="form-field">
+                            <span>Gender</span>
+                            <select class="select-input" id="newStudentGender">
+                                <option value="">Select gender</option>
+                                <option value="Female">Female</option>
+                                <option value="Male">Male</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </label>
+                        <label class="form-field">
+                            <span>Date of Birth</span>
+                            <input type="date" class="date-input" id="newStudentDateOfBirth" />
+                        </label>
+                        <label class="form-field">
+                            <span>Email</span>
+                            <input type="email" class="text-input" id="newStudentEmail" />
+                        </label>
+                        <label class="form-field">
+                            <span>Phone</span>
+                            <input type="tel" class="text-input" id="newStudentPhone" />
+                        </label>
+                    </div>
+                    <div class="form-actions">
+                        <button class="btn btn-secondary" type="reset">Clear</button>
+                        <button class="btn btn-primary" type="submit" id="createStudentButton">Add Student</button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Roll No.</th>
+                            <th>Name</th>
+                            <th>Class</th>
+                            <th>Gender</th>
+                            <th>Date of Birth</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="studentTableBody">
+                        <tr>
+                            <td colspan="6" class="empty-state">Load a class or search to see student records.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <div class="toast" id="toast">
+        <svg class="toast-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M9 11l3 3L22 4" />
+        </svg>
+        <span class="toast-message" id="toastMessage">Action completed successfully!</span>
+    </div>
+
+    <script src="assets/js/app.js"></script>
+</body>
+</html>
