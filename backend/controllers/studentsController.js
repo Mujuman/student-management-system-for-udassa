@@ -127,6 +127,23 @@ const createStudent = async (req, res) => {
       });
     }
 
+    // Pre-check for existing username or roll number to return friendlier errors
+    const [existingUsers] = await db.query('SELECT id FROM users WHERE username = ? LIMIT 1', [username]);
+    if (existingUsers.length > 0) {
+      return res.status(409).json({
+        success: false,
+        message: 'Username already exists. Please choose a different username.'
+      });
+    }
+
+    const [existingStudents] = await db.query('SELECT id FROM students WHERE roll_number = ? LIMIT 1', [roll_number]);
+    if (existingStudents.length > 0) {
+      return res.status(409).json({
+        success: false,
+        message: 'Roll number already exists. Please provide a unique roll number.'
+      });
+    }
+
     const passwordHash = await bcrypt.hash(password || 'Student123!', 10);
 
     await connection.beginTransaction();
