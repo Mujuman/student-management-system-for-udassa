@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { submitAttendance, getAttendanceByClassAndDate } = require('../controllers/attendanceController');
+const { submitAttendance, getAttendanceByClassAndDate, getAttendanceByStudent } = require('../controllers/attendanceController');
 const { authenticateToken, authorizeRoles } = require('../middleware/authMiddleware');
 const { validateAttendance } = require('../middleware/validationMiddleware');
 
@@ -9,5 +9,8 @@ router.post('/', authenticateToken, authorizeRoles('teacher'), validateAttendanc
 
 // GET /api/attendance/class/:classId/date/:date
 router.get('/class/:classId/date/:date', authenticateToken, getAttendanceByClassAndDate);
+
+// GET /api/attendance/student/:studentId - Get student attendance
+router.get('/student/:studentId', authenticateToken, getAttendanceByStudent);
 
 module.exports = router;

@@ -225,11 +225,13 @@ function navigateTo(pageName) {
 
   document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
 
+  const role = getCurrentRole();
+
   switch (pageName) {
     case 'dashboard':
       elements.dashboardPage.style.display = 'block';
-      elements.pageTitle.textContent = ROLE_CONFIG[getCurrentRole()]?.dashboardTitle || 'Dashboard';
-      elements.pageSubtitle.textContent = ROLE_CONFIG[getCurrentRole()]?.dashboardSubtitle || 'Welcome back.';
+      elements.pageTitle.textContent = ROLE_CONFIG[role]?.dashboardTitle || 'Dashboard';
+      elements.pageSubtitle.textContent = ROLE_CONFIG[role]?.dashboardSubtitle || 'Welcome back.';
       break;
     case 'attendance':
       elements.attendancePage.style.display = 'block';
@@ -238,13 +240,25 @@ function navigateTo(pageName) {
       break;
     case 'grades':
       elements.gradesPage.style.display = 'block';
-      elements.pageTitle.textContent = 'Grades Management';
-      elements.pageSubtitle.textContent = getCurrentRole() === 'student' ? 'Read your grade records.' : 'View student grades and progress.';
+      if (role === 'student') {
+        elements.pageTitle.textContent = 'My Academic Performance';
+        elements.pageSubtitle.textContent = 'Track your grades and progress across all subjects.';
+        loadStudentGradesPage();
+      } else {
+        elements.pageTitle.textContent = 'Grades Management';
+        elements.pageSubtitle.textContent = 'View student grades and progress.';
+      }
       break;
     case 'students':
       elements.studentsPage.style.display = 'block';
-      elements.pageTitle.textContent = getCurrentRole() === 'student' ? 'My Profile' : 'Student Directory';
-      elements.pageSubtitle.textContent = getCurrentRole() === 'admin' ? 'Add and browse student records.' : 'Browse student records and class assignments.';
+      if (role === 'student') {
+        elements.pageTitle.textContent = 'My Profile';
+        elements.pageSubtitle.textContent = 'View your personal and academic information.';
+        loadStudentProfilePage();
+      } else {
+        elements.pageTitle.textContent = 'Student Directory';
+        elements.pageSubtitle.textContent = 'Browse all student records and search by class, name, or roll number.';
+      }
       break;
   }
 
@@ -861,6 +875,182 @@ async function loadStudentAttendanceData(studentId) {
     if (absentDays) absentDays.textContent = '0';
     if (lateDays) lateDays.textContent = '0';
     if (excusedDays) excusedDays.textContent = '0';
+  }
+}
+
+async function loadStudentGradesPage() {
+  const role = getCurrentRole();
+  if (role !== 'student') return;
+
+  try {
+    const currentStudent = state.students.find(s => s.user_id === state.currentUser.id) || state.students[0];
+    if (!currentStudent) return;
+
+    const response = await apiRequest(`/grades/student/${currentStudent.id}`);
+    const grades = response.data || [];
+
+    // Update hero stats
+    const totalSubjects = new Set(grades.map(g => g.subject_name)).size;
+    document.getElementById('studentTotalSubjects').textContent = totalSubjects;
+
+    if (grades.length > 0) {
+      const avgPercentage = grades.reduce((sum, g) => sum + parseFloat(g.percentage || 0), 0) / grades.length;
+      document.getElementById('studentOverallAvg').textContent = avgPercentage.toFixed(1) + '%';
+      
+      const highest = Math.max(...grades.map(g => parseFloat(g.percentage || 0)));
+      document.getElementById('studentHighestGrade').textContent = highest.toFixed(1) + '%';
+    }
+
+    // Count performance categories
+    const excellent = grades.filter(g => ['A', 'B'].includes(g.grade_letter)).length;
+    const good = grades.filter(g => g.grade_letter === 'C').length;
+    const needsImprovement = grades.filter(g => ['D', 'F'].includes(g.grade_letter)).length;
+
+    document.getElementById('excellentCount').textContent = `${excellent} subject${excellent !== 1 ? 's' : ''}`;
+    document.getElementById('goodCount').textContent = `${good} subject${good !== 1 ? 's' : ''}`;
+    document.getElementById('needsImprovementCount').textContent = `${needsImprovement} subject${needsImprovement !== 1 ? 's' : ''}`;
+
+    // Render grade cards
+    renderStudentGradeCards(grades);
+
+    // Setup semester filter
+    const semesterFilter = document.getElementById('studentSemesterFilter');
+    if (semesterFilter) {
+      semesterFilter.addEventListener('change', () => {
+        const semester = semesterFilter.value;
+        const filtered = semester === 'all' ? grades : grades.filter(g => g.semester === semester);
+        renderStudentGradeCards(filtered);
+      });
+    }
+
+  } catch (error) {
+    console.error('Error loading student grades page:', error);
+  }
+}
+
+function renderStudentGradeCards(grades) {
+  const container = document.getElementById('studentGradesCards');
+  if (!container) return;
+
+  if (grades.length === 0) {
+    container.innerHTML = `
+      <div class="empty-state-card">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+          <path d="M14 2v6h6M16 13H8M16 17H8M10 9H8" />
+        </svg>
+        <h4>No Grades Yet</h4>
+        <p>Your grades will appear here once they are posted by your teachers.</p>
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = grades.map(grade => {
+    const gradeClass = grade.grade_letter;
+    const gradeColor = {
+      'A': '#10b981',
+      'B': '#3b82f6',
+      'C': '#f59e0b',
+      'D': '#ef4444',
+      'F': '#991b1b'
+    }[gradeClass] || '#64748b';
+
+    return `
+      <div class="grade-card">
+        <div class="grade-card-header">
+          <h4 class="grade-subject-name">${grade.subject_name}</h4>
+          <div class="grade-letter-large" style="background: ${gradeColor};">${grade.grade_letter}</div>
+        </div>
+        <div class="grade-card-body">
+          <div class="grade-detail-item">
+            <span class="grade-detail-label">Quiz</span>
+            <span class="grade-detail-value">${parseFloat(grade.quiz_mark).toFixed(1)}</span>
+          </div>
+          <div class="grade-detail-item">
+            <span class="grade-detail-label">Assignment</span>
+            <span class="grade-detail-value">${parseFloat(grade.assignment_mark).toFixed(1)}</span>
+          </div>
+          <div class="grade-detail-item">
+            <span class="grade-detail-label">Exam</span>
+            <span class="grade-detail-value">${parseFloat(grade.exam_mark).toFixed(1)}</span>
+          </div>
+          <div class="grade-detail-item">
+            <span class="grade-detail-label">Total</span>
+            <span class="grade-detail-value">${parseFloat(grade.total_mark).toFixed(1)}</span>
+          </div>
+        </div>
+        <div class="grade-card-footer">
+          <span class="grade-meta">${grade.semester} • ${grade.academic_year}</span>
+          <span class="grade-percentage-large">${parseFloat(grade.percentage).toFixed(1)}%</span>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+async function loadStudentProfilePage() {
+  const role = getCurrentRole();
+  if (role !== 'student') return;
+
+  try {
+    const currentStudent = state.students.find(s => s.user_id === state.currentUser.id) || state.students[0];
+    if (!currentStudent) return;
+
+    // Update hero section
+    const avatarXL = document.getElementById('studentProfileAvatarXL');
+    const heroName = document.getElementById('studentProfileHeroName');
+    const rollNo = document.getElementById('studentProfileRollNo');
+    const classInfo = document.getElementById('studentProfileClassInfo');
+
+    if (avatarXL) avatarXL.textContent = `${currentStudent.first_name.charAt(0)}${currentStudent.last_name.charAt(0)}`;
+    if (heroName) heroName.textContent = `${currentStudent.first_name} ${currentStudent.last_name}`;
+    if (rollNo) rollNo.textContent = `Roll: ${currentStudent.roll_number}`;
+    if (classInfo) classInfo.textContent = `Class: ${currentStudent.class_name || '-'}`;
+
+    // Update personal information
+    document.getElementById('studentFullName').textContent = `${currentStudent.first_name} ${currentStudent.last_name}`;
+    document.getElementById('studentInfoRollNo').textContent = currentStudent.roll_number;
+    document.getElementById('studentGender').textContent = currentStudent.gender || 'Not specified';
+    document.getElementById('studentDOB').textContent = currentStudent.date_of_birth || 'Not specified';
+    document.getElementById('studentProfileStatus').textContent = currentStudent.status || 'Active';
+
+    // Update academic information
+    document.getElementById('studentAcademicClass').textContent = currentStudent.class_name || 'Not assigned';
+    document.getElementById('studentSection').textContent = currentStudent.section || '-';
+
+    // Load grades for stats
+    const gradesResponse = await apiRequest(`/grades/student/${currentStudent.id}`);
+    const grades = gradesResponse.data || [];
+    
+    document.getElementById('studentProfileGradeCount').textContent = grades.length;
+    
+    if (grades.length > 0) {
+      const avgPercentage = grades.reduce((sum, g) => sum + parseFloat(g.percentage || 0), 0) / grades.length;
+      document.getElementById('studentProfileAvgGrade').textContent = avgPercentage.toFixed(1) + '%';
+    } else {
+      document.getElementById('studentProfileAvgGrade').textContent = 'No grades yet';
+    }
+
+    // Load attendance for stats
+    const attendanceResponse = await apiRequest(`/attendance/student/${currentStudent.id}`);
+    const attendance = attendanceResponse.data || [];
+    
+    if (attendance.length > 0) {
+      const presentCount = attendance.filter(a => a.status === 'Present' || a.status === 'Late').length;
+      const rate = (presentCount / attendance.length * 100).toFixed(1);
+      document.getElementById('studentProfileAttendance').textContent = rate + '%';
+    } else {
+      document.getElementById('studentProfileAttendance').textContent = 'No data';
+    }
+
+    // Update contact information
+    document.getElementById('studentContactEmail').textContent = currentStudent.email || 'Not provided';
+    document.getElementById('studentPhone').textContent = currentStudent.phone_number || 'Not provided';
+    document.getElementById('studentUsername').textContent = currentStudent.username || '-';
+
+  } catch (error) {
+    console.error('Error loading student profile page:', error);
   }
 }
 
