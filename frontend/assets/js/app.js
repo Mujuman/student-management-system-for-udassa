@@ -7,7 +7,7 @@
 // CONFIGURATION
 // ==========================================
 const CONFIG = {
-  API_BASE_URL: 'http://localhost:5000/api',
+  API_BASE_URL: window.location.protocol === 'file:' ? 'http://localhost:5000/api' : '/api',
   AUTH_TOKEN_KEY: 'sms_auth_token',
   AUTH_USER_KEY: 'sms_auth_user',
 };
