@@ -35,7 +35,7 @@ describe('validationMiddleware', () => {
     sanitizeBody(req, {}, () => {
       assert.strictEqual(req.body.first_name, 'Jane');
       assert.strictEqual(req.body.nested.note, 'alert(1) Hello');
-      assert.strictEqual(req.query.q, 'img src=x onerror=alert(1)');
+      assert.strictEqual(req.query.q, '');
       assert.strictEqual(req.params.id, '123');
     });
   });
