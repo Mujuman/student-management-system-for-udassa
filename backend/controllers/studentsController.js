@@ -194,4 +194,140 @@ const createStudent = async (req, res) => {
   }
 };
 
-module.exports = { getStudents, getStudentById, createStudent };
+const updateStudent = async (req, res) => {
+  const connection = await db.getConnection();
+  try {
+    const { studentId } = req.params;
+    const {
+      username,
+      password,
+      first_name,
+      last_name,
+      roll_number,
+      class_id,
+      gender,
+      date_of_birth,
+      address,
+      phone_number,
+      email,
+      status
+    } = req.body;
+
+    await connection.beginTransaction();
+
+    const [students] = await connection.query('SELECT * FROM students WHERE id = ? LIMIT 1', [studentId]);
+    if (students.length === 0) {
+      await connection.rollback();
+      return res.status(404).json({ success: false, message: 'Student not found.' });
+    }
+
+    const student = students[0];
+    const userId = student.user_id;
+
+    // Update users table if username or password provided
+    if (username !== undefined || password !== undefined) {
+      const userFields = [];
+      const userParams = [];
+      if (username !== undefined) {
+        userFields.push('username = ?');
+        userParams.push(username);
+      }
+      if (password !== undefined && password !== '') {
+        const passwordHash = await bcrypt.hash(password, 10);
+        userFields.push('password_hash = ?');
+        userParams.push(passwordHash);
+      }
+
+      if (userFields.length > 0) {
+        userParams.push(userId);
+        await connection.query(`UPDATE users SET ${userFields.join(', ')} WHERE id = ?`, userParams);
+      }
+    }
+
+    // Update students table
+    const fields = [];
+    const params = [];
+    if (first_name !== undefined) { fields.push('first_name = ?'); params.push(first_name); }
+    if (last_name !== undefined) { fields.push('last_name = ?'); params.push(last_name); }
+    if (roll_number !== undefined) { fields.push('roll_number = ?'); params.push(roll_number); }
+    if (class_id !== undefined) { fields.push('class_id = ?'); params.push(class_id); }
+    if (gender !== undefined) { fields.push('gender = ?'); params.push(gender); }
+    if (date_of_birth !== undefined) { fields.push('date_of_birth = ?'); params.push(date_of_birth); }
+    if (address !== undefined) { fields.push('address = ?'); params.push(address); }
+    if (phone_number !== undefined) { fields.push('phone_number = ?'); params.push(phone_number); }
+    if (email !== undefined) { fields.push('email = ?'); params.push(email); }
+    if (status !== undefined) { fields.push('status = ?'); params.push(status); }
+
+    if (fields.length > 0) {
+      params.push(studentId);
+      await connection.query(`UPDATE students SET ${fields.join(', ')} WHERE id = ?`, params);
+    }
+
+    await connection.commit();
+
+    const [updatedRows] = await db.query(
+      `SELECT
+        s.id,
+        s.user_id,
+        s.first_name,
+        s.last_name,
+        s.roll_number,
+        s.gender,
+        DATE_FORMAT(s.date_of_birth, '%Y-%m-%d') AS date_of_birth,
+        s.status,
+        c.id AS class_id,
+        c.class_name AS class_name,
+        c.section
+      FROM students s
+      LEFT JOIN classes c ON c.id = s.class_id
+      WHERE s.id = ?
+      LIMIT 1`,
+      [studentId]
+    );
+
+    res.status(200).json({ success: true, message: 'Student updated successfully.', data: updatedRows[0] });
+  } catch (error) {
+    await connection.rollback();
+    Logger.error('Update student error:', error);
+    if (error.code === 'ER_DUP_ENTRY') {
+      return res.status(409).json({ success: false, message: 'A student with this roll number or username already exists.' });
+    }
+    res.status(500).json({ success: false, message: 'An error occurred while updating the student.', error: process.env.NODE_ENV === 'development' ? error.message : undefined });
+  } finally {
+    connection.release();
+  }
+};
+
+const deleteStudent = async (req, res) => {
+  const connection = await db.getConnection();
+  try {
+    const { studentId } = req.params;
+    await connection.beginTransaction();
+
+    const [students] = await connection.query('SELECT * FROM students WHERE id = ? LIMIT 1', [studentId]);
+    if (students.length === 0) {
+      await connection.rollback();
+      return res.status(404).json({ success: false, message: 'Student not found.' });
+    }
+
+    const userId = students[0].user_id;
+
+    // Delete student record
+    const [delResult] = await connection.query('DELETE FROM students WHERE id = ?', [studentId]);
+
+    // Also delete associated user account (if exists)
+    await connection.query('DELETE FROM users WHERE id = ?', [userId]);
+
+    await connection.commit();
+
+    res.status(200).json({ success: true, message: 'Student and associated user account deleted successfully.' });
+  } catch (error) {
+    await connection.rollback();
+    Logger.error('Delete student error:', error);
+    res.status(500).json({ success: false, message: 'An error occurred while deleting the student.', error: process.env.NODE_ENV === 'development' ? error.message : undefined });
+  } finally {
+    connection.release();
+  }
+};
+
+module.exports = { getStudents, getStudentById, createStudent, updateStudent, deleteStudent };
