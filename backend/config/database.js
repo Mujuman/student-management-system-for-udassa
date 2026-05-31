@@ -17,16 +17,17 @@ const pool = mysql.createPool({
   keepAliveInitialDelay: 0
 });
 
-// Test database connection
-(async () => {
-  try {
-    const connection = await pool.getConnection();
-    console.log('MySQL Database Connected Successfully');
-    connection.release();
-  } catch (error) {
-    console.error('Database Connection Failed:', error.message);
-    process.exit(1);
-  }
-})();
+if (process.env.NODE_ENV !== 'test') {
+  (async () => {
+    try {
+      const connection = await pool.getConnection();
+      console.log('MySQL Database Connected Successfully');
+      connection.release();
+    } catch (error) {
+      console.error('Database Connection Failed:', error.message);
+      process.exit(1);
+    }
+  })();
+}
 
 module.exports = pool;
