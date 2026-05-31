@@ -5,9 +5,9 @@ const { authenticateToken, authorizeRoles } = require('../middleware/authMiddlew
 const { sanitizeBody, validateStudentCreate, validateStudentUpdate } = require('../middleware/validationMiddleware');
 
 router.get('/', authenticateToken, getStudents);
-router.post('/', authenticateToken, authorizeRoles('admin'), sanitizeBody, validateStudentCreate, createStudent);
-router.put('/:studentId', authenticateToken, authorizeRoles('admin'), sanitizeBody, validateStudentUpdate, updateStudent);
-router.delete('/:studentId', authenticateToken, authorizeRoles('admin'), sanitizeBody, deleteStudent);
+router.post('/', authenticateToken, authorizeRoles('admin'), validateStudentCreate, createStudent);
+router.put('/:studentId', authenticateToken, authorizeRoles('admin'), validateStudentUpdate, updateStudent);
+router.delete('/:studentId', authenticateToken, authorizeRoles('admin'), deleteStudent);
 router.get('/:studentId', authenticateToken, getStudentById);
 
 module.exports = router;

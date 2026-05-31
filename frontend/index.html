@@ -329,12 +329,14 @@
                 <form class="management-form" id="studentCreateForm">
                     <div class="form-grid">
                         <label class="form-field">
-                            <span>Username (optional)</span>
-                            <input type="text" class="text-input" id="newStudentUsername" />
+                            <span>Username <small>(leave empty to auto-generate)</small></span>
+                            <input type="text" class="text-input" id="newStudentUsername" placeholder="e.g., john_doe" />
+                            <small class="field-hint">Student will use this to login</small>
                         </label>
                         <label class="form-field">
-                            <span>Password</span>
+                            <span>Password <small>(optional)</small></span>
                             <input type="password" class="text-input" id="newStudentPassword" placeholder="Default: Student123!" />
+                            <small class="field-hint">Leave empty for default password</small>
                         </label>
                         <label class="form-field">
                             <span>First Name</span>
@@ -387,15 +389,17 @@
                         <tr>
                             <th>Roll No.</th>
                             <th>Name</th>
+                            <th>Username</th>
                             <th>Class</th>
                             <th>Gender</th>
                             <th>Date of Birth</th>
                             <th>Status</th>
+                            <th class="admin-only-column">Actions</th>
                         </tr>
                     </thead>
                     <tbody id="studentTableBody">
                         <tr>
-                            <td colspan="6" class="empty-state">Load a class or search to see student records.</td>
+                            <td colspan="8" class="empty-state">Load a class or search to see student records.</td>
                         </tr>
                     </tbody>
                 </table>

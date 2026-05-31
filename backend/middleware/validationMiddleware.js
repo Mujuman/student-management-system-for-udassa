@@ -39,7 +39,7 @@ const validateStudentCreate = [
   body('last_name').exists().withMessage('last_name is required').isLength({ min: 1 }).trim().escape(),
   body('roll_number').exists().withMessage('roll_number is required').isLength({ min: 1 }).trim().escape(),
   body('class_id').exists().withMessage('class_id is required').isInt().toInt(),
-  body('username').optional({ checkFalsy: true }).isAlphanumeric().withMessage('username must be alphanumeric').trim(),
+  body('username').optional({ checkFalsy: true }).matches(/^[a-zA-Z0-9_]+$/).withMessage('username must contain only letters, numbers, and underscores').trim(),
   body('password').optional({ checkFalsy: true }).isLength({ min: 6 }).withMessage('password must be at least 6 characters'),
   body('email').optional({ checkFalsy: true }).isEmail().normalizeEmail(),
   handleValidationErrors
@@ -50,7 +50,7 @@ const validateStudentUpdate = [
   body('last_name').optional({ checkFalsy: true }).isLength({ min: 1 }).trim().escape(),
   body('roll_number').optional({ checkFalsy: true }).isLength({ min: 1 }).trim().escape(),
   body('class_id').optional({ checkFalsy: true }).isInt().toInt(),
-  body('username').optional({ checkFalsy: true }).isAlphanumeric().withMessage('username must be alphanumeric').trim(),
+  body('username').optional({ checkFalsy: true }).matches(/^[a-zA-Z0-9_]+$/).withMessage('username must contain only letters, numbers, and underscores').trim(),
   body('password').optional({ checkFalsy: true }).isLength({ min: 6 }).withMessage('password must be at least 6 characters'),
   body('email').optional({ checkFalsy: true }).isEmail().normalizeEmail(),
   body('status').optional({ checkFalsy: true }).isIn(['Active', 'Inactive', 'Graduated', 'Transferred']).withMessage('status must be Active, Inactive, Graduated, or Transferred'),

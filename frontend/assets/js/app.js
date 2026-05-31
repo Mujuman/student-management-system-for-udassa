@@ -129,6 +129,12 @@ function updateRoleUI() {
   const role = getCurrentRole();
   const config = ROLE_CONFIG[role];
 
+  // Add role class to body for CSS targeting
+  document.body.className = '';
+  if (role) {
+    document.body.classList.add(`role-${role}`);
+  }
+
   elements.sidebarUserName.textContent = state.currentUser?.username || 'User';
   elements.sidebarUserRole.textContent = config?.label || 'Portal Access';
 
@@ -168,15 +174,32 @@ async function apiRequest(endpoint, options = {}) {
   try {
     payload = await response.json();
   } catch (error) {
+    console.error('API Response Parse Error:', error);
+    console.error('Response status:', response.status);
     throw new Error('Unexpected API response.');
   }
 
   if (!response.ok) {
+    console.error('API Error:', {
+      endpoint,
+      status: response.status,
+      payload
+    });
+    
     if (response.status === 401 || response.status === 403) {
       logout();
       showLoginScreen();
     }
-    throw new Error(payload.message || 'API request failed');
+    
+    // Better error message handling
+    let errorMessage = 'API request failed';
+    if (payload.message) {
+      errorMessage = payload.message;
+    } else if (payload.errors && Array.isArray(payload.errors)) {
+      errorMessage = payload.errors.map(e => e.msg || e.message).join(', ');
+    }
+    
+    throw new Error(errorMessage);
   }
 
   return payload;
@@ -399,20 +422,40 @@ function renderStudentDirectory(students) {
   if (!students || students.length === 0) {
     studentTableBody.innerHTML = `
       <tr>
-        <td colspan="6" class="empty-state">No student records available.</td>
+        <td colspan="8" class="empty-state">No student records available.</td>
       </tr>
     `;
     return;
   }
 
+  const isAdmin = getCurrentRole() === 'admin';
+
   studentTableBody.innerHTML = students.map(student => `
     <tr>
       <td>${student.roll_number}</td>
       <td>${student.first_name} ${student.last_name}</td>
+      <td><strong>${student.username || '—'}</strong></td>
       <td>${student.class_name || 'Unassigned'}</td>
-      <td>${student.gender}</td>
+      <td>${student.gender || '—'}</td>
       <td>${student.date_of_birth || '—'}</td>
       <td>${student.status}</td>
+      <td class="admin-only-column">
+        ${isAdmin ? `
+          <div class="action-buttons-cell">
+            <button class="btn-icon btn-edit" onclick="editStudent(${student.id})" title="Edit Student">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
+                <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
+              </svg>
+            </button>
+            <button class="btn-icon btn-delete" onclick="deleteStudent(${student.id}, '${student.first_name} ${student.last_name}')" title="Delete Student">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2" />
+              </svg>
+            </button>
+          </div>
+        ` : '—'}
+      </td>
     </tr>
   `).join('');
 }
@@ -563,6 +606,8 @@ async function createStudent(event) {
     phone_number: document.getElementById('newStudentPhone').value.trim() || null
   };
 
+  console.log('Creating student with payload:', payload);
+
   try {
     elements.createStudentButton.disabled = true;
     elements.createStudentButton.textContent = 'Adding...';
@@ -572,16 +617,78 @@ async function createStudent(event) {
       body: JSON.stringify(payload),
     });
 
+    console.log('Student created successfully:', response);
     elements.studentCreateForm.reset();
     const createdUsername = response.data?.username || response.data?.user_id || '';
-    showToast(`Student added — username: ${createdUsername}`, 'success');
+    showToast(`Student added successfully! Username: ${createdUsername}`, 'success');
     await loadStudents();
     updateDashboardCards();
   } catch (error) {
+    console.error('Create student error:', error);
     showToast(`Unable to add student: ${error.message}`, 'error');
   } finally {
     elements.createStudentButton.disabled = false;
     elements.createStudentButton.textContent = 'Add Student';
+  }
+}
+
+async function editStudent(studentId) {
+  if (getCurrentRole() !== 'admin') {
+    showToast('Only admins can edit students.', 'error');
+    return;
+  }
+
+  const student = state.students.find(s => s.id === studentId);
+  if (!student) {
+    showToast('Student not found.', 'error');
+    return;
+  }
+
+  const newFirstName = prompt('First Name:', student.first_name);
+  if (newFirstName === null) return;
+
+  const newLastName = prompt('Last Name:', student.last_name);
+  if (newLastName === null) return;
+
+  const newRollNumber = prompt('Roll Number:', student.roll_number);
+  if (newRollNumber === null) return;
+
+  try {
+    await apiRequest(`/students/${studentId}`, {
+      method: 'PUT',
+      body: JSON.stringify({
+        first_name: newFirstName.trim(),
+        last_name: newLastName.trim(),
+        roll_number: newRollNumber.trim()
+      }),
+    });
+
+    showToast('Student updated successfully!', 'success');
+    await loadStudents();
+  } catch (error) {
+    showToast(`Unable to update student: ${error.message}`, 'error');
+  }
+}
+
+async function deleteStudent(studentId, studentName) {
+  if (getCurrentRole() !== 'admin') {
+    showToast('Only admins can delete students.', 'error');
+    return;
+  }
+
+  const confirmed = confirm(`Are you sure you want to delete ${studentName}? This action cannot be undone.`);
+  if (!confirmed) return;
+
+  try {
+    await apiRequest(`/students/${studentId}`, {
+      method: 'DELETE',
+    });
+
+    showToast('Student deleted successfully!', 'success');
+    await loadStudents();
+    updateDashboardCards();
+  } catch (error) {
+    showToast(`Unable to delete student: ${error.message}`, 'error');
   }
 }
 
@@ -797,6 +904,10 @@ if (document.readyState === 'loading') {
 } else {
   init();
 }
+
+// Make functions globally accessible for inline onclick handlers
+window.editStudent = editStudent;
+window.deleteStudent = deleteStudent;
 
 const style = document.createElement('style');
 style.textContent = `

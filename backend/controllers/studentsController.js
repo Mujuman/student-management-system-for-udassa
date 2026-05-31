@@ -17,9 +17,11 @@ const getStudents = async (req, res) => {
       s.status,
       c.id AS class_id,
       c.class_name AS class_name,
-      c.section
+      c.section,
+      u.username
     FROM students s
-    LEFT JOIN classes c ON c.id = s.class_id`;
+    LEFT JOIN classes c ON c.id = s.class_id
+    LEFT JOIN users u ON u.id = s.user_id`;
 
     if (req.user.role === 'student') {
       query += ' WHERE s.user_id = ?';
@@ -132,6 +134,7 @@ const createStudent = async (req, res) => {
     const sanitize = (s) => String(s || '').toLowerCase().replace(/[^a-z0-9]/g, '');
 
     if (!finalUsername) {
+      // Auto-generate username
       const base = sanitize(`${first_name}${last_name}`) || sanitize(roll_number) || `user${Date.now()}`;
       let candidate = base;
       let suffix = 0;
@@ -146,19 +149,25 @@ const createStudent = async (req, res) => {
         candidate = `${base}${suffix}`;
       }
     } else {
-      // Use provided username
-      finalUsername = finalUsername;
+      // Username was provided - validate it's not empty after trim
+      if (!finalUsername) {
+        return res.status(400).json({
+          success: false,
+          message: 'Username cannot be empty.'
+        });
+      }
+      
+      // Check if provided username already exists
+      const [existingUsers] = await db.query('SELECT id FROM users WHERE username = ? LIMIT 1', [finalUsername]);
+      if (existingUsers.length > 0) {
+        return res.status(409).json({
+          success: false,
+          message: 'Username already exists. Please choose a different username.'
+        });
+      }
     }
 
-    // Pre-check for existing username or roll number to return friendlier errors
-    const [existingUsers] = await db.query('SELECT id FROM users WHERE username = ? LIMIT 1', [finalUsername]);
-    if (existingUsers.length > 0) {
-      return res.status(409).json({
-        success: false,
-        message: 'Username already exists. Please choose a different username.'
-      });
-    }
-
+    // Check for existing roll number
     const [existingStudents] = await db.query('SELECT id FROM students WHERE roll_number = ? LIMIT 1', [roll_number]);
     if (existingStudents.length > 0) {
       return res.status(409).json({

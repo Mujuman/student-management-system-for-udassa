@@ -1427,3 +1427,74 @@ body {
   }
 }
 \n/* ==========================================\n   LOGIN / OVERLAY STYLES\n   ========================================== */\n.login-screen {\n  position: fixed;\n  inset: 0;\n  background: rgba(15, 23, 42, 0.88);\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  z-index: 2000;\n  padding: 1.5rem;\n}\n\n.login-panel {\n  max-width: 420px;\n  width: 100%;\n}\n\n.login-card {\n  background: white;\n  border-radius: 1rem;\n  padding: 2rem;\n  box-shadow: 0 25px 60px rgba(15, 23, 42, 0.2);\n}\n\n.login-card h2 {\n  margin-bottom: 0.75rem;\n  font-size: 1.75rem;\n}\n\n.login-card p {\n  margin-bottom: 1.75rem;\n  color: var(--text-secondary);\n}\n\n.login-form {\n  display: grid;\n  gap: 1rem;\n}\n\n.form-label {\n  color: var(--text-secondary);\n  font-weight: 500;\n}\n\n.text-input {\n  width: 100%;\n  padding: 0.9rem 1rem;\n  border: 1px solid var(--border-color);\n  border-radius: var(--border-radius-md);\n  background: var(--bg-primary);\n  color: var(--text-primary);\n  outline: none;\n  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);\n}\n\n.text-input:focus {\n  border-color: var(--color-primary);\n  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.12);\n}\n\n.btn-full {\n  width: 100%;\n}\n\n.login-error {\n  color: var(--color-danger);\n  font-size: 0.95rem;\n  min-height: 1.2rem;\n}\n\n.login-screen {\n  display: none;\n}\n\n@media (max-width: 900px) {\n  .sidebar {\n    transform: translateX(-100%);\n  }\n\n  .sidebar.open {\n    transform: translateX(0);\n  }\n}\n\n@media (max-width: 680px) {\n  .page-header-row,\n  .filter-row {\n    flex-direction: column;\n    align-items: stretch;\n  }\n}\n
+
+/* ==========================================
+   ACTION BUTTONS IN TABLE
+   ========================================== */
+.action-buttons-cell {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+  align-items: center;
+}
+
+.btn-icon {
+  padding: 0.5rem;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  border-radius: var(--border-radius-sm);
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-icon svg {
+  width: 18px;
+  height: 18px;
+}
+
+.btn-edit {
+  color: var(--color-primary);
+}
+
+.btn-edit:hover {
+  background: var(--color-gray-100);
+  color: var(--color-primary-dark);
+}
+
+.btn-delete {
+  color: var(--color-danger);
+}
+
+.btn-delete:hover {
+  background: #fee;
+  color: #dc2626;
+}
+
+.admin-only-column {
+  text-align: center;
+}
+
+/* Hide admin columns for non-admin users */
+body:not(.role-admin) .admin-only-column {
+  display: none;
+}
+
+/* ==========================================
+   FORM FIELD HINTS
+   ========================================== */
+.field-hint {
+  display: block;
+  margin-top: 0.25rem;
+  font-size: 0.75rem;
+  color: var(--text-tertiary);
+  font-style: italic;
+}
+
+.form-field small {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  font-weight: normal;
+}
