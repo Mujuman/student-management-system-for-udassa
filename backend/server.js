@@ -62,6 +62,18 @@ app.use((req, res, next) => {
   next();
 });
 
+// Content Security Policy header
+app.use((req, res, next) => {
+  res.setHeader("Content-Security-Policy",
+    "default-src 'self'; connect-src 'self' http://localhost:5000; font-src 'self' https://fonts.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data:;"
+  );
+  next();
+});
+
+// Global request sanitization
+const { sanitizeBody } = require('./middleware/validationMiddleware');
+app.use(sanitizeBody);
+
 // ==========================================
 // API ROUTES
 // ==========================================
@@ -70,6 +82,12 @@ app.use('/api/attendance', attendanceRoutes);
 app.use('/api/grades', gradesRoutes);
 app.use('/api/classes', classesRoutes);
 app.use('/api/students', studentsRoutes);
+
+// Ensure JWT secret is set
+if (!process.env.JWT_SECRET) {
+  Logger.error('JWT_SECRET is not set. Set JWT_SECRET in .env and restart.');
+  process.exit(1);
+}
 
 // ==========================================
 // API ROOT ENDPOINT
