@@ -120,15 +120,38 @@ const createStudent = async (req, res) => {
       status
     } = req.body;
 
-    if (!username || !first_name || !last_name || !roll_number || !class_id) {
+    if (!first_name || !last_name || !roll_number || !class_id) {
       return res.status(400).json({
         success: false,
-        message: 'username, first_name, last_name, roll_number, and class_id are required.'
+        message: 'first_name, last_name, roll_number, and class_id are required.'
       });
     }
 
+    // If username not provided, generate one from first and last name (ensure uniqueness)
+    let finalUsername = username && String(username).trim();
+    const sanitize = (s) => String(s || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+
+    if (!finalUsername) {
+      const base = sanitize(`${first_name}${last_name}`) || sanitize(roll_number) || `user${Date.now()}`;
+      let candidate = base;
+      let suffix = 0;
+      // Loop until we find a username that does not exist
+      while (true) {
+        const [rows] = await db.query('SELECT id FROM users WHERE username = ? LIMIT 1', [candidate]);
+        if (rows.length === 0) {
+          finalUsername = candidate;
+          break;
+        }
+        suffix += 1;
+        candidate = `${base}${suffix}`;
+      }
+    } else {
+      // Use provided username
+      finalUsername = finalUsername;
+    }
+
     // Pre-check for existing username or roll number to return friendlier errors
-    const [existingUsers] = await db.query('SELECT id FROM users WHERE username = ? LIMIT 1', [username]);
+    const [existingUsers] = await db.query('SELECT id FROM users WHERE username = ? LIMIT 1', [finalUsername]);
     if (existingUsers.length > 0) {
       return res.status(409).json({
         success: false,
@@ -150,7 +173,7 @@ const createStudent = async (req, res) => {
 
     const [userResult] = await connection.query(
       'INSERT INTO users (username, password_hash, role, is_active) VALUES (?, ?, ?, ?)',
-      [username, passwordHash, 'student', 1]
+      [finalUsername, passwordHash, 'student', 1]
     );
 
     const [studentResult] = await connection.query(
@@ -180,7 +203,7 @@ const createStudent = async (req, res) => {
       data: {
         id: studentResult.insertId,
         user_id: userResult.insertId,
-        username,
+        username: finalUsername,
         first_name,
         last_name,
         roll_number,
