@@ -35,7 +35,7 @@ const corsOptions = {
   optionsSuccessStatus: 200
 };
 app.use(cors(corsOptions));
-app.options('/*', cors(corsOptions));
+app.options(/.*/, cors(corsOptions));
 
 // Rate limiting
 const limiter = rateLimit({
