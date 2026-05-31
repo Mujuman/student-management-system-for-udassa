@@ -567,13 +567,14 @@ async function createStudent(event) {
     elements.createStudentButton.disabled = true;
     elements.createStudentButton.textContent = 'Adding...';
 
-    await apiRequest('/students', {
+    const response = await apiRequest('/students', {
       method: 'POST',
       body: JSON.stringify(payload),
     });
 
     elements.studentCreateForm.reset();
-    showToast('Student added successfully.', 'success');
+    const createdUsername = response.data?.username || response.data?.user_id || '';
+    showToast(`Student added — username: ${createdUsername}`, 'success');
     await loadStudents();
     updateDashboardCards();
   } catch (error) {
