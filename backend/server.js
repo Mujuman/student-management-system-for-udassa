@@ -74,6 +74,9 @@ app.use((req, res, next) => {
 const { sanitizeBody } = require('./middleware/validationMiddleware');
 app.use(sanitizeBody);
 
+// Serve frontend static files from the frontend directory
+app.use(express.static(path.join(__dirname, '../frontend')));
+
 // ==========================================
 // API ROUTES
 // ==========================================
