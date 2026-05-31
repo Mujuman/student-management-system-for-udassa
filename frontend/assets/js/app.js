@@ -153,6 +153,11 @@ function updateRoleUI() {
   if (elements.quickStudentsText) {
     elements.quickStudentsText.textContent = role === 'admin' ? 'Add Students' : 'Student Records';
   }
+
+  // Update student dashboard if student role
+  if (role === 'student') {
+    updateStudentDashboard();
+  }
 }
 
 async function apiRequest(endpoint, options = {}) {
@@ -703,6 +708,159 @@ async function initializeAppData() {
 
   if (gradeStudentSelect.value) {
     await loadGradesForStudent(gradeStudentSelect.value);
+  }
+
+  // Update student dashboard if student role
+  if (getCurrentRole() === 'student') {
+    await updateStudentDashboard();
+  }
+}
+
+async function updateStudentDashboard() {
+  const role = getCurrentRole();
+  if (role !== 'student') return;
+
+  try {
+    // Get current student info
+    const currentStudent = state.students.find(s => s.user_id === state.currentUser.id) || state.students[0];
+    
+    if (!currentStudent) {
+      console.warn('No student data found');
+      return;
+    }
+
+    // Update welcome name
+    const welcomeName = document.getElementById('studentWelcomeName');
+    if (welcomeName) {
+      welcomeName.textContent = currentStudent.first_name;
+    }
+
+    // Update profile info
+    const profileName = document.getElementById('studentProfileName');
+    const rollNumber = document.getElementById('studentRollNumber');
+    const studentClass = document.getElementById('studentClass');
+    const studentEmail = document.getElementById('studentEmail');
+    const studentStatus = document.getElementById('studentStatus');
+    const avatarInitials = document.getElementById('studentAvatarInitials');
+
+    if (profileName) profileName.textContent = `${currentStudent.first_name} ${currentStudent.last_name}`;
+    if (rollNumber) rollNumber.textContent = currentStudent.roll_number || '-';
+    if (studentClass) studentClass.textContent = currentStudent.class_name ? `${currentStudent.class_name} - Section ${currentStudent.section}` : '-';
+    if (studentEmail) studentEmail.textContent = currentStudent.email || 'Not provided';
+    if (studentStatus) studentStatus.textContent = currentStudent.status || 'Active';
+    if (avatarInitials) {
+      const initials = `${currentStudent.first_name.charAt(0)}${currentStudent.last_name.charAt(0)}`;
+      avatarInitials.textContent = initials;
+    }
+
+    // Update class info stat
+    const classInfo = document.getElementById('studentClassInfo');
+    if (classInfo) {
+      classInfo.textContent = currentStudent.class_name || '-';
+    }
+
+    // Load and display grades
+    if (currentStudent.id) {
+      await loadStudentGradesData(currentStudent.id);
+    }
+
+    // Load attendance data
+    await loadStudentAttendanceData(currentStudent.id);
+
+  } catch (error) {
+    console.error('Error updating student dashboard:', error);
+  }
+}
+
+async function loadStudentGradesData(studentId) {
+  try {
+    const response = await apiRequest(`/grades/student/${studentId}`);
+    const grades = response.data || [];
+
+    // Update grade count
+    const gradeCount = document.getElementById('studentGradeCount');
+    if (gradeCount) gradeCount.textContent = grades.length;
+
+    // Calculate average grade
+    if (grades.length > 0) {
+      const avgPercentage = grades.reduce((sum, g) => sum + parseFloat(g.percentage || 0), 0) / grades.length;
+      const avgGrade = document.getElementById('studentAvgGrade');
+      if (avgGrade) avgGrade.textContent = avgPercentage.toFixed(1) + '%';
+    }
+
+    // Display recent grades (top 5)
+    const recentGradesContainer = document.getElementById('studentRecentGrades');
+    if (recentGradesContainer) {
+      if (grades.length === 0) {
+        recentGradesContainer.innerHTML = '<div class="empty-state-small">No grades available yet</div>';
+      } else {
+        const recentGrades = grades.slice(0, 5);
+        recentGradesContainer.innerHTML = recentGrades.map(grade => `
+          <div class="grade-item">
+            <div class="grade-subject">${grade.subject_name}</div>
+            <div class="grade-score">
+              <span class="grade-percentage">${parseFloat(grade.percentage).toFixed(1)}%</span>
+              <span class="grade-letter ${grade.grade_letter}">${grade.grade_letter}</span>
+            </div>
+          </div>
+        `).join('');
+      }
+    }
+  } catch (error) {
+    console.error('Error loading student grades:', error);
+  }
+}
+
+async function loadStudentAttendanceData(studentId) {
+  try {
+    // Get attendance records for this student
+    const response = await apiRequest(`/attendance/student/${studentId}`);
+    const attendanceRecords = response.data || [];
+
+    // Count attendance by status
+    const counts = {
+      Present: 0,
+      Absent: 0,
+      Late: 0,
+      Excused: 0
+    };
+
+    attendanceRecords.forEach(record => {
+      if (counts.hasOwnProperty(record.status)) {
+        counts[record.status]++;
+      }
+    });
+
+    // Update attendance circles
+    const presentDays = document.getElementById('studentPresentDays');
+    const absentDays = document.getElementById('studentAbsentDays');
+    const lateDays = document.getElementById('studentLateDays');
+    const excusedDays = document.getElementById('studentExcusedDays');
+
+    if (presentDays) presentDays.textContent = counts.Present;
+    if (absentDays) absentDays.textContent = counts.Absent;
+    if (lateDays) lateDays.textContent = counts.Late;
+    if (excusedDays) excusedDays.textContent = counts.Excused;
+
+    // Calculate attendance rate
+    const totalDays = attendanceRecords.length;
+    const attendanceRate = totalDays > 0 ? ((counts.Present + counts.Late) / totalDays * 100).toFixed(1) : 0;
+    
+    const attendanceRateEl = document.getElementById('studentAttendanceRate');
+    if (attendanceRateEl) attendanceRateEl.textContent = attendanceRate + '%';
+
+  } catch (error) {
+    console.error('Error loading student attendance:', error);
+    // Set defaults if error
+    const presentDays = document.getElementById('studentPresentDays');
+    const absentDays = document.getElementById('studentAbsentDays');
+    const lateDays = document.getElementById('studentLateDays');
+    const excusedDays = document.getElementById('studentExcusedDays');
+
+    if (presentDays) presentDays.textContent = '0';
+    if (absentDays) absentDays.textContent = '0';
+    if (lateDays) lateDays.textContent = '0';
+    if (excusedDays) excusedDays.textContent = '0';
   }
 }
 

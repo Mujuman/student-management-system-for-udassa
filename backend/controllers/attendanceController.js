@@ -139,4 +139,52 @@ const getAttendanceByClassAndDate = async (req, res) => {
   }
 };
 
-module.exports = { submitAttendance, getAttendanceByClassAndDate };
+// GET /api/attendance/student/:studentId - Get all attendance records for a student
+const getAttendanceByStudent = async (req, res) => {
+  try {
+    const { studentId } = req.params;
+
+    // Check if user is a student and can only view their own attendance
+    if (req.user.role === 'student') {
+      const [students] = await db.query('SELECT id FROM students WHERE id = ? AND user_id = ?', [studentId, req.user.id]);
+      if (students.length === 0) {
+        return res.status(403).json({
+          success: false,
+          message: 'Access denied. Students can only view their own attendance.'
+        });
+      }
+    }
+
+    const [attendance] = await db.query(
+      `SELECT 
+        a.id,
+        a.date,
+        a.status,
+        a.remarks,
+        c.class_name,
+        c.section,
+        a.created_at
+      FROM attendance a
+      LEFT JOIN classes c ON a.class_id = c.id
+      WHERE a.student_id = ?
+      ORDER BY a.date DESC`,
+      [studentId]
+    );
+
+    res.status(200).json({
+      success: true,
+      message: 'Student attendance records retrieved successfully.',
+      data: attendance
+    });
+
+  } catch (error) {
+    Logger.error('Get student attendance error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'An error occurred while retrieving student attendance.',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
+  }
+};
+
+module.exports = { submitAttendance, getAttendanceByClassAndDate, getAttendanceByStudent };
