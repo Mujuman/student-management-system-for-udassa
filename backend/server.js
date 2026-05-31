@@ -26,7 +26,15 @@ const PORT = process.env.PORT || 5000;
 app.use(helmet());
 
 // CORS configuration
-const allowedOrigins = process.env.CORS_ORIGIN ? process.env.CORS_ORIGIN.split(',').map(origin => origin.trim()) : true;
+let allowedOrigins;
+if (process.env.CORS_ORIGIN === '*') {
+  allowedOrigins = true; // Allow all origins
+} else if (process.env.CORS_ORIGIN) {
+  allowedOrigins = process.env.CORS_ORIGIN.split(',').map(origin => origin.trim());
+} else {
+  allowedOrigins = true;
+}
+
 const corsOptions = {
   origin: allowedOrigins,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
@@ -35,7 +43,7 @@ const corsOptions = {
   optionsSuccessStatus: 200
 };
 app.use(cors(corsOptions));
-app.options(/.*/, cors(corsOptions));
+app.options('*', cors(corsOptions));
 
 // Rate limiting
 const limiter = rateLimit({

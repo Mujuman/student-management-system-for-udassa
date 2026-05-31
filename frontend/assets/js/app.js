@@ -7,7 +7,7 @@
 // CONFIGURATION
 // ==========================================
 const CONFIG = {
-  API_BASE_URL: window.location.protocol === 'file:' ? 'http://localhost:5000/api' : '/api',
+  API_BASE_URL: 'http://localhost:5000/api',
   AUTH_TOKEN_KEY: 'sms_auth_token',
   AUTH_USER_KEY: 'sms_auth_user',
 };
@@ -626,16 +626,26 @@ async function login(event) {
   }
 
   try {
-    const response = await fetch(`${CONFIG.API_BASE_URL}/auth/login`, {
+    const loginUrl = `${CONFIG.API_BASE_URL.replace(/\/$/, '')}/auth/login`;
+    const response = await fetch(loginUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ username, password }),
     });
 
-    const data = await response.json();
+    const bodyText = await response.text();
+    let data;
+
+    try {
+      data = bodyText ? JSON.parse(bodyText) : {};
+    } catch (parseError) {
+      console.error('Login parse error response body:', bodyText);
+      throw new Error(`Invalid server response (status ${response.status}): ${bodyText || parseError.message}`);
+    }
 
     if (!response.ok) {
-      loginError.textContent = data.message || 'Invalid username or password.';
+      console.error('Login failed response body:', data);
+      loginError.textContent = data?.message || data?.error || response.statusText || 'Invalid username or password.';
       return;
     }
 
@@ -651,7 +661,7 @@ async function login(event) {
     navigateTo('dashboard');
     showToast(`Welcome back, ${state.currentUser.username}!`, 'success');
   } catch (error) {
-    loginError.textContent = 'Unable to sign in. Please try again.';
+    loginError.textContent = error.message || 'Unable to sign in. Please try again.';
     console.error('Login error:', error);
   }
 }
@@ -752,6 +762,7 @@ function initEventListeners() {
 }
 
 async function init() {
+  console.log('Student Management System UI initialized');
   if (elements.attendanceDate) {
     elements.attendanceDate.value = getTodayDate();
   }
