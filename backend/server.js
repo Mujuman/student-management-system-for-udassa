@@ -13,6 +13,7 @@ const attendanceRoutes = require('./routes/attendanceRoutes');
 const gradesRoutes = require('./routes/gradesRoutes');
 const classesRoutes = require('./routes/classesRoutes');
 const studentsRoutes = require('./routes/studentsRoutes');
+const teachersRoutes = require('./routes/teachersRoutes');
 
 // Initialize Express app
 const app = express();
@@ -96,6 +97,7 @@ app.use('/api/attendance', attendanceRoutes);
 app.use('/api/grades', gradesRoutes);
 app.use('/api/classes', classesRoutes);
 app.use('/api/students', studentsRoutes);
+app.use('/api/teachers', teachersRoutes);
 
 // Ensure JWT secret is set
 if (!process.env.JWT_SECRET) {

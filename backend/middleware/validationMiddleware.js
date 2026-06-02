@@ -99,4 +99,38 @@ const validateGradeUpdate = [
   handleValidationErrors
 ];
 
-module.exports = { sanitizeBody, validateStudentCreate, validateStudentUpdate, validateLogin, validateAttendance, validateGradeCreate, validateGradeUpdate };
+const validateTeacher = [
+  body('first_name').exists().withMessage('first_name is required').isLength({ min: 1 }).trim().escape(),
+  body('last_name').exists().withMessage('last_name is required').isLength({ min: 1 }).trim().escape(),
+  body('email').exists().withMessage('email is required').isEmail().normalizeEmail(),
+  body('username').exists().withMessage('username is required').matches(/^[a-zA-Z0-9_]+$/).withMessage('username must contain only letters, numbers, and underscores').trim(),
+  body('password').exists().withMessage('password is required').isLength({ min: 6 }).withMessage('password must be at least 6 characters'),
+  body('phone_number').optional({ checkFalsy: true }).trim().escape(),
+  body('subject_specialization').optional({ checkFalsy: true }).trim().escape(),
+  body('hire_date').optional({ checkFalsy: true }).isISO8601().withMessage('hire_date must be a valid date'),
+  handleValidationErrors
+];
+
+const validateUpdateTeacher = [
+  body('first_name').optional({ checkFalsy: true }).isLength({ min: 1 }).trim().escape(),
+  body('last_name').optional({ checkFalsy: true }).isLength({ min: 1 }).trim().escape(),
+  body('email').optional({ checkFalsy: true }).isEmail().normalizeEmail(),
+  body('username').optional({ checkFalsy: true }).matches(/^[a-zA-Z0-9_]+$/).withMessage('username must contain only letters, numbers, and underscores').trim(),
+  body('phone_number').optional({ checkFalsy: true }).trim().escape(),
+  body('subject_specialization').optional({ checkFalsy: true }).trim().escape(),
+  body('hire_date').optional({ checkFalsy: true }).isISO8601().withMessage('hire_date must be a valid date'),
+  handleValidationErrors
+];
+
+module.exports = { 
+  sanitizeBody, 
+  handleValidationErrors,
+  validateStudentCreate, 
+  validateStudentUpdate, 
+  validateLogin, 
+  validateAttendance, 
+  validateGradeCreate, 
+  validateGradeUpdate,
+  validateTeacher,
+  validateUpdateTeacher
+};
