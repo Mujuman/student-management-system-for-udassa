@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="description" content="Student Portal - High School Student Management System" />
+    <title>Student Portal | SMS</title>
+
+    <!-- Preconnect for performance -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+
+    <!-- Main Stylesheet -->
+    <link rel="stylesheet" href="assets/css/styles.css" />
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎓</text></svg>" />
+</head>
+<body class="role-student">
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <svg class="logo-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M22 10v6M2 10l10-5 10 5-10 5z" />
+                    <path d="M6 12v5c3 3 9 3 12 0v-5" />
+                </svg>
+                <h1 class="logo-text">Student Portal</h1>
+            </div>
+            <button class="sidebar-close" id="sidebarClose" aria-label="Close sidebar">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
+
+        <nav class="sidebar-nav">
+            <ul class="nav-list">
+                <li class="nav-item active">
+                    <a href="#dashboard" class="nav-link" data-page="dashboard">
+                        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="3" width="7" height="7" />
+                            <rect x="14" y="3" width="7" height="7" />
+                            <rect x="14" y="14" width="7" height="7" />
+                            <rect x="3" y="14" width="7" height="7" />
+                        </svg>
+                        <span class="nav-text">Dashboard</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#grades" class="nav-link" data-page="grades">
+                        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+                            <path d="M14 2v6h6M16 13H8M16 17H8M10 9H8" />
+                        </svg>
+                        <span class="nav-text">My Grades</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#students" class="nav-link" data-page="students">
+                        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" />
+                            <circle cx="12" cy="7" r="4" />
+                        </svg>
+                        <span class="nav-text">My Profile</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <div class="sidebar-user">
+            <div class="user-avatar">
+                <span id="sidebarUserInitials">ST</span>
+            </div>
+            <div class="user-info">
+                <p class="user-name" id="sidebarUserName">Student</p>
+                <p class="user-role" id="sidebarUserRole">Student</p>
+            </div>
+        </div>
+
+        <div class="sidebar-footer">
+            <button class="logout-btn" id="btnLogout">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9" />
+                </svg>
+                <span>Sign Out</span>
+            </button>
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <header class="header">
+            <div class="header-left">
+                <button class="hamburger-btn" id="hamburgerBtn" aria-label="Toggle sidebar">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M3 12h18M3 6h18M3 18h18" />
+                    </svg>
+                </button>
+                <div class="page-header-text">
+                    <h2 class="page-title" id="pageTitle">Student Dashboard</h2>
+                    <p class="page-subtitle" id="pageSubtitle">Welcome back! Here's your academic overview.</p>
+                </div>
+            </div>
+            <div class="header-right">
+                <button class="notification-btn" aria-label="Notifications">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0" />
+                    </svg>
+                    <span class="badge">3</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Student Dashboard -->
+        <section class="dashboard-section" id="dashboardPage">
+            <!-- Welcome Banner -->
+            <div class="student-welcome-banner">
+                <div class="welcome-content">
+                    <h2 class="welcome-title">Welcome back, <span id="studentWelcomeName">Student</span>! 👋</h2>
+                    <p class="welcome-subtitle">Here's your academic overview and progress</p>
+                </div>
+                <div class="welcome-illustration">
+                    <svg viewBox="0 0 200 200" fill="none">
+                        <circle cx="100" cy="100" r="80" fill="#3b82f6" opacity="0.1"/>
+                        <path d="M100 40 L140 80 L100 120 L60 80 Z" fill="#3b82f6" opacity="0.3"/>
+                        <circle cx="100" cy="100" r="30" fill="#3b82f6"/>
+                    </svg>
+                </div>
+            </div>
+
+            <!-- Student Stats Grid -->
+            <div class="student-stats-grid">
+                <div class="student-stat-card">
+                    <div class="stat-icon-circle blue">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+                            <path d="M14 2v6h6M16 13H8M16 17H8M10 9H8" />
+                        </svg>
+                    </div>
+                    <div class="stat-info">
+                        <h3 class="stat-number" id="studentGradeCount">0</h3>
+                        <p class="stat-text">Total Grades</p>
+                    </div>
+                </div>
+
+                <div class="student-stat-card">
+                    <div class="stat-icon-circle green">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M22 11.08V12a10 10 0 11-5.93-9.14" />
+                            <path d="M22 4L12 14.01l-3-3" />
+                        </svg>
+                    </div>
+                    <div class="stat-info">
+                        <h3 class="stat-number" id="studentAttendanceRate">0%</h3>
+                        <p class="stat-text">Attendance Rate</p>
+                    </div>
+                </div>
+
+                <div class="student-stat-card">
+                    <div class="stat-icon-circle yellow">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                        </svg>
+                    </div>
+                    <div class="stat-info">
+                        <h3 class="stat-number" id="studentAvgGrade">-</h3>
+                        <p class="stat-text">Average Grade</p>
+                    </div>
+                </div>
+
+                <div class="student-stat-card">
+                    <div class="stat-icon-circle purple">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                            <path d="M16 2v4M8 2v4M3 10h18" />
+                        </svg>
+                    </div>
+                    <div class="stat-info">
+                        <h3 class="stat-number" id="studentClassInfo">-</h3>
+                        <p class="stat-text">Your Class</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Student Profile Section -->
+            <div class="student-profile-section">
+                <div class="profile-card">
+                    <div class="profile-header">
+                        <div class="profile-avatar-large">
+                            <span id="studentAvatarInitials">ST</span>
+                        </div>
+                        <div class="profile-info">
+                            <h3 class="profile-name" id="studentProfileName">Student Name</h3>
+                            <p class="profile-detail"><strong>Roll Number:</strong> <span id="studentRollNumber">-</span></p>
+                            <p class="profile-detail"><strong>Class:</strong> <span id="studentClass">-</span></p>
+                            <p class="profile-detail"><strong>Email:</strong> <span id="studentEmail">-</span></p>
+                            <p class="profile-detail"><strong>Status:</strong> <span class="status-badge" id="studentStatus">Active</span></p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Grades -->
+                <div class="recent-grades-card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+                                <path d="M14 2v6h6M16 13H8M16 17H8M10 9H8" />
+                            </svg>
+                            Recent Grades
+                        </h3>
+                        <button class="btn-link" onclick="navigateTo('grades')">View All →</button>
+                    </div>
+                    <div class="grades-list" id="studentRecentGrades">
+                        <div class="empty-state-small">No grades available yet</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Attendance Overview -->
+            <div class="attendance-overview-card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                            <path d="M16 2v4M8 2v4M3 10h18" />
+                        </svg>
+                        Attendance Overview
+                    </h3>
+                </div>
+                <div class="attendance-summary" id="studentAttendanceSummary">
+                    <div class="attendance-stat">
+                        <div class="attendance-circle present">
+                            <span id="studentPresentDays">0</span>
+                        </div>
+                        <p>Present</p>
+                    </div>
+                    <div class="attendance-stat">
+                        <div class="attendance-circle absent">
+                            <span id="studentAbsentDays">0</span>
+                        </div>
+                        <p>Absent</p>
+                    </div>
+                    <div class="attendance-stat">
+                        <div class="attendance-circle late">
+                            <span id="studentLateDays">0</span>
+                        </div>
+                        <p>Late</p>
+                    </div>
+                    <div class="attendance-stat">
+                        <div class="attendance-circle excused">
+                            <span id="studentExcusedDays">0</span>
+                        </div>
+                        <p>Excused</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions for Students -->
+            <div class="student-quick-actions">
+                <button class="student-action-card" onclick="navigateTo('grades')">
+                    <div class="action-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+                            <path d="M14 2v6h6M16 13H8M16 17H8M10 9H8" />
+                        </svg>
+                    </div>
+                    <h4>View All Grades</h4>
+                    <p>Check your complete academic record</p>
+                </button>
+
+                <button class="student-action-card" onclick="navigateTo('students')">
+                    <div class="action-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" />
+                            <circle cx="12" cy="7" r="4" />
+                        </svg>
+                    </div>
+                    <h4>My Profile</h4>
+                    <p>View and update your information</p>
+                </button>
+            </div>
+        </section>
+
+        <!-- Student Grades Page -->
+        <section class="page-section" id="gradesPage" style="display: none;">
+            <div class="grades-hero">
+                <div class="hero-content">
+                    <h2 class="hero-title">📚 My Academic Performance</h2>
+                    <p class="hero-subtitle">Track your progress across all subjects and semesters</p>
+                </div>
+                <div class="hero-stats">
+                    <div class="hero-stat-item">
+                        <div class="hero-stat-value" id="studentTotalSubjects">0</div>
+                        <div class="hero-stat-label">Subjects</div>
+                    </div>
+                    <div class="hero-stat-item">
+                        <div class="hero-stat-value" id="studentOverallAvg">-</div>
+                        <div class="hero-stat-label">Overall Average</div>
+                    </div>
+                    <div class="hero-stat-item">
+                        <div class="hero-stat-value" id="studentHighestGrade">-</div>
+                        <div class="hero-stat-label">Highest Grade</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Performance Summary Cards -->
+            <div class="performance-summary">
+                <div class="summary-card excellent">
+                    <div class="summary-icon">🌟</div>
+                    <div class="summary-content">
+                        <h4>Excellent Performance</h4>
+                        <p class="summary-count" id="excellentCount">0 subjects</p>
+                        <p class="summary-desc">Grades A & B</p>
+                    </div>
+                </div>
+                <div class="summary-card good">
+                    <div class="summary-icon">👍</div>
+                    <div class="summary-content">
+                        <h4>Good Performance</h4>
+                        <p class="summary-count" id="goodCount">0 subjects</p>
+                        <p class="summary-desc">Grade C</p>
+                    </div>
+                </div>
+                <div class="summary-card needs-improvement">
+                    <div class="summary-icon">📈</div>
+                    <div class="summary-content">
+                        <h4>Needs Improvement</h4>
+                        <p class="summary-count" id="needsImprovementCount">0 subjects</p>
+                        <p class="summary-desc">Grades D & F</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Detailed Grades Table -->
+            <div class="student-grades-container">
+                <div class="grades-section-header">
+                    <h3>📊 Detailed Grade Report</h3>
+                    <div class="semester-filter">
+                        <label>Filter by Semester:</label>
+                        <select id="studentSemesterFilter" class="select-input">
+                            <option value="all">All Semesters</option>
+                            <option value="1">Semester 1</option>
+                            <option value="2">Semester 2</option>
+                            <option value="Annual">Annual</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grades-cards-grid" id="studentGradesCards">
+                    <div class="empty-state-card">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+                            <path d="M14 2v6h6M16 13H8M16 17H8M10 9H8" />
+                        </svg>
+                        <h4>No Grades Yet</h4>
+                        <p>Your grades will appear here once they are posted by your teachers.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Student Profile Page -->
+        <section class="page-section" id="studentsPage" style="display: none;">
+            <div class="profile-hero">
+                <div class="profile-hero-bg"></div>
+                <div class="profile-hero-content">
+                    <div class="profile-avatar-xl">
+                        <span id="studentProfileAvatarXL">ST</span>
+                    </div>
+                    <div class="profile-hero-info">
+                        <h2 class="profile-hero-name" id="studentProfileHeroName">Student Name</h2>
+                        <p class="profile-hero-role">Student</p>
+                        <div class="profile-hero-meta">
+                            <span class="meta-item">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" />
+                                    <circle cx="12" cy="7" r="4" />
+                                </svg>
+                                <span id="studentProfileRollNo">Roll: -</span>
+                            </span>
+                            <span class="meta-item">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                                    <path d="M16 2v4M8 2v4M3 10h18" />
+                                </svg>
+                                <span id="studentProfileClassInfo">Class: -</span>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="profile-content-grid">
+                <!-- Personal Information Card -->
+                <div class="profile-info-card">
+                    <div class="info-card-header">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" />
+                            <circle cx="12" cy="7" r="4" />
+                        </svg>
+                        <h3>Personal Information</h3>
+                    </div>
+                    <div class="info-card-body">
+                        <div class="info-row">
+                            <span class="info-label">Full Name</span>
+                            <span class="info-value" id="studentFullName">-</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Roll Number</span>
+                            <span class="info-value" id="studentInfoRollNo">-</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Gender</span>
+                            <span class="info-value" id="studentGender">-</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Date of Birth</span>
+                            <span class="info-value" id="studentDOB">-</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Status</span>
+                            <span class="status-badge-profile" id="studentProfileStatus">Active</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Academic Information Card -->
+                <div class="profile-info-card">
+                    <div class="info-card-header">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+                        </svg>
+                        <h3>Academic Information</h3>
+                    </div>
+                    <div class="info-card-body">
+                        <div class="info-row">
+                            <span class="info-label">Class</span>
+                            <span class="info-value" id="studentAcademicClass">-</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Section</span>
+                            <span class="info-value" id="studentSection">-</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Total Grades</span>
+                            <span class="info-value" id="studentProfileGradeCount">0</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Average Performance</span>
+                            <span class="info-value" id="studentProfileAvgGrade">-</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Attendance Rate</span>
+                            <span class="info-value" id="studentProfileAttendance">-</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Contact Information Card -->
+                <div class="profile-info-card">
+                    <div class="info-card-header">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+                            <path d="M22 6l-10 7L2 6" />
+                        </svg>
+                        <h3>Contact Information</h3>
+                    </div>
+                    <div class="info-card-body">
+                        <div class="info-row">
+                            <span class="info-label">Email Address</span>
+                            <span class="info-value" id="studentContactEmail">-</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Phone Number</span>
+                            <span class="info-value" id="studentPhone">-</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Username</span>
+                            <span class="info-value" id="studentUsername">-</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Actions Card -->
+                <div class="profile-info-card profile-actions-card">
+                    <div class="info-card-header">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10" />
+                            <path d="M12 16v-4M12 8h.01" />
+                        </svg>
+                        <h3>Quick Actions</h3>
+                    </div>
+                    <div class="info-card-body">
+                        <button class="profile-action-btn" onclick="navigateTo('grades')">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+                                <path d="M14 2v6h6M16 13H8M16 17H8M10 9H8" />
+                            </svg>
+                            View My Grades
+                        </button>
+                        <button class="profile-action-btn" onclick="navigateTo('dashboard')">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="3" width="7" height="7" />
+                                <rect x="14" y="3" width="7" height="7" />
+                                <rect x="14" y="14" width="7" height="7" />
+                                <rect x="3" y="14" width="7" height="7" />
+                            </svg>
+                            Back to Dashboard
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <div class="toast" id="toast">
+        <svg class="toast-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M9 11l3 3L22 4" />
+        </svg>
+        <span class="toast-message" id="toastMessage">Action completed successfully!</span>
+    </div>
+
+    <script src="assets/js/student.js"></script>
+</body>
+</html>
