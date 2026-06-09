@@ -8,21 +8,28 @@ const Logger = require('../utils/logger');
 const getAllTeachers = async (req, res) => {
   try {
     const query = `
-      SELECT 
-        t.*,
-        u.username,
-        u.email as user_email,
-        u.created_at,
-        u.updated_at
-      FROM teachers t
-      LEFT JOIN users u ON t.user_id = u.id
-      ORDER BY t.first_name ASC, t.last_name ASC
+      SELECT
+        id,
+        username,
+        email,
+        first_name,
+        last_name,
+        phone_number,
+        subject_specialization,
+        DATE_FORMAT(hire_date, '%Y-%m-%d') AS hire_date,
+        role,
+        is_active,
+        created_at,
+        updated_at
+      FROM users
+      WHERE role = 'teacher'
+      ORDER BY first_name ASC, last_name ASC
     `;
-    
+
     const [teachers] = await connection.execute(query);
-    
+
     Logger.info('Teachers retrieved successfully', { count: teachers.length });
-    
+
     res.status(200).json({
       success: true,
       message: 'Teachers retrieved successfully',
@@ -44,30 +51,37 @@ const getAllTeachers = async (req, res) => {
 const getTeacherById = async (req, res) => {
   try {
     const { id } = req.params;
-    
+
     const query = `
-      SELECT 
-        t.*,
-        u.username,
-        u.email as user_email,
-        u.created_at,
-        u.updated_at
-      FROM teachers t
-      LEFT JOIN users u ON t.user_id = u.id
-      WHERE t.id = ?
+      SELECT
+        id,
+        username,
+        email,
+        first_name,
+        last_name,
+        phone_number,
+        subject_specialization,
+        DATE_FORMAT(hire_date, '%Y-%m-%d') AS hire_date,
+        role,
+        is_active,
+        created_at,
+        updated_at
+      FROM users
+      WHERE id = ? AND role = 'teacher'
+      LIMIT 1
     `;
-    
+
     const [teachers] = await connection.execute(query, [id]);
-    
+
     if (teachers.length === 0) {
       return res.status(404).json({
         success: false,
         message: 'Teacher not found',
       });
     }
-    
+
     Logger.info('Teacher retrieved successfully', { teacherId: id });
-    
+
     res.status(200).json({
       success: true,
       message: 'Teacher retrieved successfully',
@@ -88,10 +102,10 @@ const getTeacherById = async (req, res) => {
 // ==========================================
 const createTeacher = async (req, res) => {
   const conn = await connection.getConnection();
-  
+
   try {
     await conn.beginTransaction();
-    
+
     const {
       first_name,
       last_name,
@@ -103,15 +117,13 @@ const createTeacher = async (req, res) => {
       password,
     } = req.body;
 
-    // Validate required fields
-    if (!first_name || !last_name || !email || !username || !password) {
+    if (!username || !password) {
       return res.status(400).json({
         success: false,
-        message: 'Required fields: first_name, last_name, email, username, password',
+        message: 'Required fields: username and password',
       });
     }
 
-    // Check if username already exists
     const [existingUsers] = await conn.execute(
       'SELECT id FROM users WHERE username = ?',
       [username]
@@ -124,71 +136,46 @@ const createTeacher = async (req, res) => {
       });
     }
 
-    // Check if email already exists
-    const [existingEmails] = await conn.execute(
-      'SELECT id FROM users WHERE email = ?',
-      [email]
-    );
+    const hashedPassword = await bcrypt.hash(password, 12);
 
-    if (existingEmails.length > 0) {
-      return res.status(400).json({
-        success: false,
-        message: 'Email already exists',
-      });
-    }
-
-    // Hash password
-    const saltRounds = 12;
-    const hashedPassword = await bcrypt.hash(password, saltRounds);
-
-    // Create user account
     const [userResult] = await conn.execute(
-      'INSERT INTO users (username, password, email, role) VALUES (?, ?, ?, ?)',
-      [username, hashedPassword, email, 'teacher']
-    );
-
-    const userId = userResult.insertId;
-
-    // Create teacher record
-    const [teacherResult] = await conn.execute(
-      `INSERT INTO teachers 
-       (user_id, first_name, last_name, email, phone_number, subject_specialization, hire_date) 
-       VALUES (?, ?, ?, ?, ?, ?, ?)`,
-      [userId, first_name, last_name, email, phone_number, subject_specialization, hire_date]
+      'INSERT INTO users (username, password_hash, role, is_active, email, first_name, last_name, phone_number, subject_specialization, hire_date) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+      [username, hashedPassword, 'teacher', 1, email || null, first_name || null, last_name || null, phone_number || null, subject_specialization || null, hire_date || null]
     );
 
     await conn.commit();
 
-    Logger.info('Teacher created successfully', { 
-      teacherId: teacherResult.insertId,
+    Logger.info('Teacher created successfully', {
+      userId: userResult.insertId,
       username,
-      email 
+      email,
     });
 
     res.status(201).json({
       success: true,
       message: 'Teacher created successfully',
       data: {
-        id: teacherResult.insertId,
-        user_id: userId,
+        id: userResult.insertId,
+        username,
+        email,
         first_name,
         last_name,
-        email,
-        username,
+        phone_number,
+        subject_specialization,
+        hire_date,
       },
     });
-
   } catch (error) {
     await conn.rollback();
     Logger.error('Error creating teacher:', error);
-    
+
     if (error.code === 'ER_DUP_ENTRY') {
       return res.status(400).json({
         success: false,
-        message: 'Teacher with this email or username already exists',
+        message: 'Teacher with this username or email already exists',
       });
     }
-    
+
     res.status(500).json({
       success: false,
       message: 'Internal server error',
@@ -204,10 +191,10 @@ const createTeacher = async (req, res) => {
 // ==========================================
 const updateTeacher = async (req, res) => {
   const conn = await connection.getConnection();
-  
+
   try {
     await conn.beginTransaction();
-    
+
     const { id } = req.params;
     const {
       first_name,
@@ -219,80 +206,83 @@ const updateTeacher = async (req, res) => {
       username,
     } = req.body;
 
-    // Check if teacher exists
-    const [existingTeacher] = await conn.execute(
-      'SELECT user_id FROM teachers WHERE id = ?',
-      [id]
+    const [existingUsers] = await conn.execute(
+      'SELECT id FROM users WHERE id = ? AND role = ?',
+      [id, 'teacher']
     );
 
-    if (existingTeacher.length === 0) {
+    if (existingUsers.length === 0) {
+      await conn.rollback();
       return res.status(404).json({
         success: false,
         message: 'Teacher not found',
       });
     }
 
-    const userId = existingTeacher[0].user_id;
+    const updateFields = [];
+    const updateValues = [];
 
-    // Update teacher record
-    await conn.execute(
-      `UPDATE teachers 
-       SET first_name = ?, last_name = ?, email = ?, phone_number = ?, 
-           subject_specialization = ?, hire_date = ?, updated_at = NOW()
-       WHERE id = ?`,
-      [first_name, last_name, email, phone_number, subject_specialization, hire_date, id]
-    );
+    if (username) {
+      const [existingUsersWithUsername] = await conn.execute(
+        'SELECT id FROM users WHERE username = ? AND id != ?',
+        [username, id]
+      );
+      if (existingUsersWithUsername.length > 0) {
+        await conn.rollback();
+        return res.status(400).json({
+          success: false,
+          message: 'Username already exists',
+        });
+      }
+      updateFields.push('username = ?');
+      updateValues.push(username);
+    }
 
-    // Update user record if username or email provided
-    if (username || email) {
-      const updateFields = [];
-      const updateValues = [];
-      
-      if (username) {
-        // Check if username is already taken by another user
-        const [existingUsers] = await conn.execute(
-          'SELECT id FROM users WHERE username = ? AND id != ?',
-          [username, userId]
-        );
-        
-        if (existingUsers.length > 0) {
-          return res.status(400).json({
-            success: false,
-            message: 'Username already exists',
-          });
-        }
-        
-        updateFields.push('username = ?');
-        updateValues.push(username);
+    if (email) {
+      const [existingUsersWithEmail] = await conn.execute(
+        'SELECT id FROM users WHERE email = ? AND id != ?',
+        [email, id]
+      );
+      if (existingUsersWithEmail.length > 0) {
+        await conn.rollback();
+        return res.status(400).json({
+          success: false,
+          message: 'Email already exists',
+        });
       }
-      
-      if (email) {
-        // Check if email is already taken by another user
-        const [existingEmails] = await conn.execute(
-          'SELECT id FROM users WHERE email = ? AND id != ?',
-          [email, userId]
-        );
-        
-        if (existingEmails.length > 0) {
-          return res.status(400).json({
-            success: false,
-            message: 'Email already exists',
-          });
-        }
-        
-        updateFields.push('email = ?');
-        updateValues.push(email);
-      }
-      
-      if (updateFields.length > 0) {
-        updateFields.push('updated_at = NOW()');
-        updateValues.push(userId);
-        
-        await conn.execute(
-          `UPDATE users SET ${updateFields.join(', ')} WHERE id = ?`,
-          updateValues
-        );
-      }
+      updateFields.push('email = ?');
+      updateValues.push(email);
+    }
+
+    if (first_name !== undefined) {
+      updateFields.push('first_name = ?');
+      updateValues.push(first_name);
+    }
+    if (last_name !== undefined) {
+      updateFields.push('last_name = ?');
+      updateValues.push(last_name);
+    }
+    if (phone_number !== undefined) {
+      updateFields.push('phone_number = ?');
+      updateValues.push(phone_number);
+    }
+    if (subject_specialization !== undefined) {
+      updateFields.push('subject_specialization = ?');
+      updateValues.push(subject_specialization);
+    }
+    if (hire_date !== undefined) {
+      updateFields.push('hire_date = ?');
+      updateValues.push(hire_date);
+    }
+
+    if (updateFields.length > 0) {
+      updateFields.push('updated_at = NOW()');
+      updateValues.push(id);
+
+      await conn.execute(
+        `UPDATE users SET ${updateFields.join(', ')} WHERE id = ?`,
+        updateValues
+      );
     }
 
     await conn.commit();
@@ -303,11 +293,10 @@ const updateTeacher = async (req, res) => {
       success: true,
       message: 'Teacher updated successfully',
     });
-
   } catch (error) {
     await conn.rollback();
     Logger.error('Error updating teacher:', error);
-    
+
     res.status(500).json({
       success: false,
       message: 'Internal server error',
@@ -323,32 +312,26 @@ const updateTeacher = async (req, res) => {
 // ==========================================
 const deleteTeacher = async (req, res) => {
   const conn = await connection.getConnection();
-  
+
   try {
     await conn.beginTransaction();
-    
+
     const { id } = req.params;
 
-    // Check if teacher exists
-    const [existingTeacher] = await conn.execute(
-      'SELECT user_id FROM teachers WHERE id = ?',
-      [id]
+    const [existingUsers] = await conn.execute(
+      'SELECT id FROM users WHERE id = ? AND role = ?',
+      [id, 'teacher']
     );
 
-    if (existingTeacher.length === 0) {
+    if (existingUsers.length === 0) {
+      await conn.rollback();
       return res.status(404).json({
         success: false,
         message: 'Teacher not found',
       });
     }
 
-    const userId = existingTeacher[0].user_id;
-
-    // Delete teacher record (this will cascade to related records)
-    await conn.execute('DELETE FROM teachers WHERE id = ?', [id]);
-    
-    // Delete user account
-    await conn.execute('DELETE FROM users WHERE id = ?', [userId]);
+    await conn.execute('DELETE FROM users WHERE id = ?', [id]);
 
     await conn.commit();
 
@@ -358,11 +341,10 @@ const deleteTeacher = async (req, res) => {
       success: true,
       message: 'Teacher deleted successfully',
     });
-
   } catch (error) {
     await conn.rollback();
     Logger.error('Error deleting teacher:', error);
-    
+
     res.status(500).json({
       success: false,
       message: 'Internal server error',
