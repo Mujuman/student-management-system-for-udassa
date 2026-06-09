@@ -20,7 +20,7 @@ CREATE TABLE users (
   phone_number VARCHAR(20),
   subject_specialization VARCHAR(120),
   hire_date DATE,
-  role ENUM('teacher','admin','student') NOT NULL DEFAULT 'teacher',
+  role ENUM('admin','teacher','parent','student') NOT NULL DEFAULT 'student',
   is_active TINYINT(1) NOT NULL DEFAULT 1,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
