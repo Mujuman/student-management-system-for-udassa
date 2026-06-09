@@ -101,6 +101,12 @@ function showToast(message, type = 'success') {
   setTimeout(() => elements.toast.classList.remove('show'), 4000);
 }
 
+function getInitials(firstName, lastName) {
+  const firstInitial = firstName && firstName.length ? firstName.charAt(0).toUpperCase() : '';
+  const lastInitial = lastName && lastName.length ? lastName.charAt(0).toUpperCase() : '';
+  return (firstInitial || lastInitial) ? `${firstInitial}${lastInitial}` : 'NA';
+}
+
 async function apiRequest(endpoint, options = {}) {
   const headers = {
     'Content-Type': 'application/json',
@@ -275,10 +281,10 @@ function updateDashboardStats() {
 
   // Update sidebar user info
   if (elements.sidebarUserInitials && state.currentUser) {
-    elements.sidebarUserInitials.textContent = state.currentUser.username.charAt(0).toUpperCase();
+    elements.sidebarUserInitials.textContent = getInitials(state.currentUser.username || '', '');
   }
   if (elements.sidebarUserName && state.currentUser) {
-    elements.sidebarUserName.textContent = state.currentUser.username;
+    elements.sidebarUserName.textContent = state.currentUser.username || 'Administrator';
   }
   if (elements.sidebarUserRole) {
     elements.sidebarUserRole.textContent = 'Administrator';
@@ -312,10 +318,10 @@ function renderStudentsTable(studentsToRender = state.students) {
     <tr>
       <td>
         <div class="student-avatar">
-          ${student.first_name.charAt(0)}${student.last_name.charAt(0)}
+          ${getInitials(student.first_name, student.last_name)}
         </div>
       </td>
-      <td>${student.first_name} ${student.last_name}</td>
+      <td>${student.first_name || 'N/A'} ${student.last_name || ''}</td>
       <td>${student.roll_number}</td>
       <td>${student.class_name || 'Unassigned'}</td>
       <td>${student.email || 'Not provided'}</td>
@@ -515,10 +521,10 @@ function renderTeachersTable(teachersToRender = state.teachers) {
     <tr>
       <td>
         <div class="student-avatar">
-          ${teacher.first_name.charAt(0)}${teacher.last_name.charAt(0)}
+          ${getInitials(teacher.first_name, teacher.last_name)}
         </div>
       </td>
-      <td>${teacher.first_name} ${teacher.last_name}</td>
+      <td>${teacher.first_name || 'N/A'} ${teacher.last_name || ''}</td>
       <td>${teacher.email}</td>
       <td>${teacher.subject_specialization || 'Not specified'}</td>
       <td>${teacher.username}</td>
